@@ -63,7 +63,7 @@ jobs:
           mlflow.set_tracking_uri("mlruns")
           client = mlflow.tracking.MlflowClient()
 
-          experiment = client.get_experiment_by_name("Earthquake-Indonesia-Classification")
+          experiment = client.get_experiment_by_name("earthquake-indonesia-classification")
 
           if experiment is None:
               all_exps = client.search_experiments()
@@ -80,7 +80,7 @@ jobs:
 
           if not runs:
               raise ValueError("Tidak ada run di experiment ini!")
-              
+
           print(runs[0].info.run_id)
           EOF
           )

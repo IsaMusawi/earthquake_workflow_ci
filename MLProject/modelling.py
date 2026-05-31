@@ -53,7 +53,7 @@ RANDOM_STATE = 42
 # MLflow
 EXPERIMENT_NAME = os.environ.get(
     "MLFLOW_EXPERIMENT_NAME",
-    "Earthquake-Indonesia-Classification"
+    "earthquake-indonesia-classification"
 )
 RUN_NAME        = "RandomForest-Autolog"
 
