@@ -45,22 +45,42 @@ jobs:
  
       # ── 6. Run MLflow Project ─────────────────────────────────────────────
       - name: Run mlflow project
+        env:
+          MLFLOW_TRACKING_URI: mlruns
         run: |
           mlflow run MLProject/ --env-manager=local \
             -P data=earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv
  
       # ── 7. Get latest MLflow run_id ───────────────────────────────────────
       - name: Get latest MLflow run_id
+        env:
+          MLFLOW_TRACKING_URI: mlruns
         run: |
           RUN_ID=$(python - <<'EOF'
+
           import mlflow
-          client = mlflow.tracking.MlflowClient("mlruns")
+
+          mlflow.set_tracking_uri("mlruns")
+          client = mlflow.tracking.MlflowClient()
+
           experiment = client.get_experiment_by_name("Earthquake-Indonesia-Classification")
+
+          if experiment is None:
+              all_exps = client.search_experiments()
+              print("[DEBUG] Experiment tidak ditemukan! List experiment:")
+              for e in all_exps:
+                  print(f"  - {e.name} (id={e.experiment_id})")
+              raise ValueError("Experiment tidak ditemukan!")
+
           runs = client.search_runs(
               experiment_ids=[experiment.experiment_id],
               order_by=["start_time DESC"],
               max_results=1
           )
+
+          if not runs:
+              raise ValueError("Tidak ada run di experiment ini!")
+              
           print(runs[0].info.run_id)
           EOF
           )
