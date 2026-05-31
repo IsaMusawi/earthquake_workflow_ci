@@ -47,7 +47,7 @@ jobs:
       - name: Run mlflow project
         run: |
           mlflow run MLProject/ --env-manager=local \
-            -P data=MLProject/earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv
+            -P data=earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv
  
       # ── 7. Get latest MLflow run_id ───────────────────────────────────────
       - name: Get latest MLflow run_id
