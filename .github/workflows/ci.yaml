@@ -1,0 +1,80 @@
+name: CI - Earthquake Model Training
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Bisa di-trigger manual
+
+
+ 
+jobs:
+  train:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # ── 1. Checkout repo ──────────────────────────────────────────────────
+      - name: Run actions/checkout@v3
+        uses: actions/checkout@v3
+ 
+      # ── 2. Setup Python ───────────────────────────────────────────────────
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.7"
+ 
+      # ── 3. Check Environment ──────────────────────────────────────────────
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
+ 
+      # ── 4. Install dependencies ───────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mlflow==2.19.0 scikit-learn==1.6.0 pandas numpy geopy matplotlib seaborn
+ 
+      # ── 5. Set MLflow Tracking URI ────────────────────────────────────────
+      - name: Set MLflow Tracking URI
+        run: |
+          echo "MLFLOW_TRACKING_URI=mlruns" >> $GITHUB_ENV
+ 
+      # ── 6. Run MLflow Project ─────────────────────────────────────────────
+      - name: Run mlflow project
+        run: |
+          mlflow run MLProject/ --env-manager=local \
+            -P data=MLProject/earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv
+ 
+      # ── 7. Get latest MLflow run_id ───────────────────────────────────────
+      - name: Get latest MLflow run_id
+        run: |
+          RUN_ID=$(python - <<'EOF'
+          import mlflow
+          client = mlflow.tracking.MlflowClient("mlruns")
+          experiment = client.get_experiment_by_name("Earthquake-Indonesia-Classification")
+          runs = client.search_runs(
+              experiment_ids=[experiment.experiment_id],
+              order_by=["start_time DESC"],
+              max_results=1
+          )
+          print(runs[0].info.run_id)
+          EOF
+          )
+          echo "MLFLOW_RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Latest run_id: $RUN_ID"
+ 
+      # ── 8. Install Python dependencies for upload ─────────────────────────
+      - name: Install Python dependencies
+        run: pip install mlflow==2.19.0
+ 
+      # ── 9. Upload artefak MLflow ke GitHub ───────────────────────────────
+      - name: Upload to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-artifacts-${{ env.MLFLOW_RUN_ID }}
+          path: mlruns/
+          retention-days: 30

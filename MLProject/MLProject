@@ -1,0 +1,11 @@
+name: earthquake-indonesia-classification
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      data:
+        type: str
+        default: "earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv"
+    command: "python modelling.py --data {data}"

@@ -1,0 +1,7 @@
+# Tautan Docker Hub (Kriteria Advanced)
+# File ini diisi jika menerapkan Kriteria 3 Advanced (mlflow build-docker + push ke Docker Hub)
+# Contoh format:
+# https://hub.docker.com/r/<username>/<image-name>
+
+# Untuk submission ini, target adalah Skilled (3 pts)
+# Artefak disimpan ke GitHub Actions Artifacts (mlruns/)
