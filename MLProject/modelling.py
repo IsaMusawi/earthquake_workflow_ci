@@ -51,7 +51,10 @@ TEST_SIZE    = 0.2
 RANDOM_STATE = 42
  
 # MLflow
-EXPERIMENT_NAME = "Earthquake-Indonesia-Classification"
+EXPERIMENT_NAME = os.environ.get(
+    "MLFLOW_EXPERIMENT_NAME",
+    "Earthquake-Indonesia-Classification"
+)
 RUN_NAME        = "RandomForest-Autolog"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -108,6 +111,8 @@ def train_model(X_train, X_test, y_train, y_test):
     Script ini TIDAK memanggil set_tracking_uri / set_experiment / start_run
     agar tidak konflik dengan run yang sudah di-inject oleh MLflow Project.
     """
+    
+    mlflow.set_experiment(EXPERIMENT_NAME)
     # Aktifkan autolog sebelum fit() — akan log ke run aktif yang di-inject mlflow run
     mlflow.sklearn.autolog(
         log_input_examples=True,
@@ -121,45 +126,47 @@ def train_model(X_train, X_test, y_train, y_test):
     log.info("Active Run ID: %s", os.environ.get("MLFLOW_RUN_ID", "tidak ada (lokal)"))
  
     # Definisi model
-    model = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=10,
-        min_samples_split=5,
-        min_samples_leaf=2,
-        random_state=RANDOM_STATE,
-        n_jobs=-1
-    )
- 
-    # Training — autolog otomatis log ke run aktif
-    model.fit(X_train, y_train)
- 
-    # Evaluasi manual (untuk console log)
-    y_pred      = model.predict(X_test)
-    y_pred_prob = model.predict_proba(X_test)[:, 1]
- 
-    acc       = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall    = recall_score(y_test, y_pred)
-    f1        = f1_score(y_test, y_pred)
-    roc_auc   = roc_auc_score(y_test, y_pred_prob)
-    cm        = confusion_matrix(y_test, y_pred)
- 
-    log.info("=" * 50)
-    log.info("HASIL EVALUASI MODEL")
-    log.info("=" * 50)
-    log.info("  Accuracy  : %.4f", acc)
-    log.info("  Precision : %.4f", precision)
-    log.info("  Recall    : %.4f", recall)
-    log.info("  F1-Score  : %.4f", f1)
-    log.info("  ROC-AUC   : %.4f", roc_auc)
-    log.info("  Confusion Matrix:\n%s", cm)
-    log.info("=" * 50)
- 
-    # Tag tambahan ke run aktif
-    mlflow.set_tag("model_type", "RandomForestClassifier")
-    mlflow.set_tag("dataset", "earthquake_indonesia")
-    mlflow.set_tag("task", "binary_classification")
-    mlflow.set_tag("triggered_by", os.environ.get("GITHUB_EVENT_NAME", "manual"))
+    with mlflow.start_run(run_name=RUN_NAME) as run:
+        log.info("MLflow Run ID: %s", run.info.run_id)
+        model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            random_state=RANDOM_STATE,
+            n_jobs=-1
+        )
+    
+        # Training — autolog otomatis log ke run aktif
+        model.fit(X_train, y_train)
+    
+        # Evaluasi manual (untuk console log)
+        y_pred      = model.predict(X_test)
+        y_pred_prob = model.predict_proba(X_test)[:, 1]
+    
+        acc       = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall    = recall_score(y_test, y_pred)
+        f1        = f1_score(y_test, y_pred)
+        roc_auc   = roc_auc_score(y_test, y_pred_prob)
+        cm        = confusion_matrix(y_test, y_pred)
+    
+        log.info("=" * 50)
+        log.info("HASIL EVALUASI MODEL")
+        log.info("=" * 50)
+        log.info("  Accuracy  : %.4f", acc)
+        log.info("  Precision : %.4f", precision)
+        log.info("  Recall    : %.4f", recall)
+        log.info("  F1-Score  : %.4f", f1)
+        log.info("  ROC-AUC   : %.4f", roc_auc)
+        log.info("  Confusion Matrix:\n%s", cm)
+        log.info("=" * 50)
+    
+        # Tag tambahan ke run aktif
+        mlflow.set_tag("model_type", "RandomForestClassifier")
+        mlflow.set_tag("dataset", "earthquake_indonesia")
+        mlflow.set_tag("task", "binary_classification")
+        mlflow.set_tag("triggered_by", os.environ.get("GITHUB_EVENT_NAME", "manual"))
  
     log.info("Training selesai! Artefak tersimpan di MLflow.")
  
