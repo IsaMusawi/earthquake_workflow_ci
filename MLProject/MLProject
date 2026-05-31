@@ -1,4 +1,4 @@
-name: earthquake-indonesia-classification
+name: Earthquake-Indonesia-Classification
 
 conda_env: conda.yaml
 

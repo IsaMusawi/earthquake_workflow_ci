@@ -53,7 +53,7 @@ RANDOM_STATE = 42
 # MLflow
 EXPERIMENT_NAME = os.environ.get(
     "MLFLOW_EXPERIMENT_NAME",
-    "earthquake-indonesia-classification"
+    "Earthquake-Indonesia-Classification"
 )
 RUN_NAME        = "RandomForest-Autolog"
 
@@ -112,7 +112,7 @@ def train_model(X_train, X_test, y_train, y_test):
     agar tidak konflik dengan run yang sudah di-inject oleh MLflow Project.
     """
     
-    mlflow.set_experiment(EXPERIMENT_NAME)
+    # mlflow.set_experiment(EXPERIMENT_NAME)
     # Aktifkan autolog sebelum fit() — akan log ke run aktif yang di-inject mlflow run
     mlflow.sklearn.autolog(
         log_input_examples=True,

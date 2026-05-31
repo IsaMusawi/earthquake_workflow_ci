@@ -47,8 +47,10 @@ jobs:
       - name: Run mlflow project
         env:
           MLFLOW_TRACKING_URI: mlruns
+          MLFLOW_EXPERIMENT_NAME: Earthquake-Indonesia-Classification
         run: |
           mlflow run MLProject/ --env-manager=local \
+            --experiment-name "Earthquake-Indonesia-Classification" \
             -P data=earthquake_indonesia_preprocessing/earthquake_indonesia_preprocessing.csv
  
       # ── 7. Get latest MLflow run_id ───────────────────────────────────────
@@ -63,7 +65,7 @@ jobs:
           mlflow.set_tracking_uri("mlruns")
           client = mlflow.tracking.MlflowClient()
 
-          experiment = client.get_experiment_by_name("earthquake-indonesia-classification")
+          experiment = client.get_experiment_by_name("Earthquake-Indonesia-Classification")
 
           if experiment is None:
               all_exps = client.search_experiments()
